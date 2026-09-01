@@ -119,15 +119,17 @@ fn collect_markdown(directory: &Path, pages: &mut Vec<PathBuf>, diagnostics: &mu
 }
 
 fn is_external(target: &str) -> bool {
-    ["http:", "https:", "mailto:"]
-        .iter()
-        .any(|scheme| target.starts_with(scheme))
+    ["http:", "https:", "mailto:"].iter().any(|scheme| {
+        target
+            .get(..scheme.len())
+            .is_some_and(|prefix| prefix.eq_ignore_ascii_case(scheme))
+    })
 }
 
 fn is_machine_specific(target: &str) -> bool {
     let bytes = target.as_bytes();
     target.starts_with('/')
-        || target.starts_with('\\')
+        || target.contains('\\')
         || target.starts_with("~/")
         || (bytes.len() > 1 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':')
 }
@@ -194,6 +196,35 @@ mod tests {
         let diagnostics = check(&root);
 
         assert!(diagnostics.is_empty(), "{diagnostics:?}");
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+
+    #[test]
+    fn accepts_external_schemes_case_insensitively() {
+        let root = fixture(
+            "[Home](index.md)\n",
+            "[Web](HTTPS://example.com) [Other](HtTp://example.com) [Mail](MAILTO:a@example.com)\n",
+        );
+
+        let diagnostics = check(&root);
+
+        assert!(diagnostics.is_empty(), "{diagnostics:?}");
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+
+    #[test]
+    fn rejects_backslashes_anywhere_in_local_targets() {
+        let root = fixture("[Home](index.md)\n", "[Windows](nested\\page.md)\n");
+        fs::create_dir(root.join("src/nested")).expect("nested fixture directory");
+        fs::write(root.join("src/nested/page.md"), "# Page\n").expect("nested fixture page");
+
+        let diagnostics = check(&root);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(
+            diagnostics[0].message,
+            "absolute or machine-specific Markdown path is not allowed"
+        );
         fs::remove_dir_all(root).expect("remove fixture");
     }
 
