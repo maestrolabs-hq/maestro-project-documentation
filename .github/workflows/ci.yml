@@ -1,0 +1,39 @@
+# Fast repository and site gates. Long evidence remains in heavy.yml.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  common:
+    uses: maestrolabs-hq/.github/.github/workflows/common-fast.yml@main
+
+  fast:
+    uses: maestrolabs-hq/.github/.github/workflows/rust-fast.yml@main
+    with:
+      duplication-test: standards
+
+  site:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repository
+        uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5
+      - name: Install mdBook
+        uses: peaceiris/actions-mdbook@ee69d230fe19748b7abf22df32acaa93833fad08 # v2
+        with:
+          mdbook-version: "0.5.4"
+      - name: Validate and build
+        run: |
+          cargo run -p sitecheck -- .
+          mdbook test
+          mdbook build

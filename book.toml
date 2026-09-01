@@ -1,0 +1,28 @@
+# The public rendering of Maestro's shared Markdown knowledge.
+
+[book]
+title = "Maestro"
+description = "Agent orchestration, and the machinery that keeps it honest."
+authors = ["MaestroLabs"]
+language = "en"
+src = "src"
+
+[build]
+build-dir = "build"
+create-missing = false
+
+[output.html]
+default-theme = "navy"
+preferred-dark-theme = "navy"
+smart-punctuation = true
+git-repository-url = "https://github.com/maestrolabs-hq/maestro-project-documentation"
+edit-url-template = "https://github.com/maestrolabs-hq/maestro-project-documentation/edit/main/{path}"
+no-section-label = true
+
+[output.html.search]
+enable = true
+limit-results = 20
+use-boolean-and = true
+boost-title = 3
+boost-hierarchy = 2
+boost-paragraph = 1
