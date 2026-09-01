@@ -1170,4 +1170,3 @@ Confirm all eleven acceptance criteria from the design spec with evidence:
 - governance registration and rules;
 - no duplicated repository source of truth;
 - responsive, keyboard, contrast, and reduced-motion checks.
-

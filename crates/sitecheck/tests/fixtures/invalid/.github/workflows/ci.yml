@@ -1,0 +1,12 @@
+# Minimal workflow file required by the invalid repository fixture.
+name: Invalid Fixture CI
+
+on: workflow_dispatch
+
+permissions: {}
+
+jobs:
+  fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - run: "true"

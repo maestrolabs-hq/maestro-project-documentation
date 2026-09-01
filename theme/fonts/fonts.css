@@ -1,0 +1,8 @@
+/* The Institution wordmark and editorial headings use a locally bundled face. */
+@font-face {
+  font-family: "Cormorant Garamond";
+  src: url("CormorantGaramond-b20b7d96.ttf") format("truetype");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 300 700;
+}
