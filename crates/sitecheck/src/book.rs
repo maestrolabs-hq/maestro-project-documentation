@@ -1,0 +1,234 @@
+//! mdBook navigation and relative-link checks rooted at the repository.
+
+use crate::{Diagnostic, markdown::inline_targets};
+use std::{
+    fs,
+    path::{Path, PathBuf},
+};
+
+#[must_use]
+pub fn check(root: &Path) -> Vec<Diagnostic> {
+    let source = root.join("src");
+    let summary = source.join("SUMMARY.md");
+    let mut diagnostics = Vec::new();
+    let summary_markdown = match fs::read_to_string(&summary) {
+        Ok(markdown) => markdown,
+        Err(error) => {
+            diagnostics.push(Diagnostic {
+                path: summary,
+                line: None,
+                message: format!("cannot read book summary: {error}"),
+            });
+            return diagnostics;
+        }
+    };
+
+    check_targets(
+        &summary,
+        &source,
+        &summary_markdown,
+        "SUMMARY references a missing page",
+        &mut diagnostics,
+    );
+
+    let mut pages = Vec::new();
+    collect_markdown(&source, &mut pages, &mut diagnostics);
+    for page in pages {
+        if page == summary {
+            continue;
+        }
+        match fs::read_to_string(&page) {
+            Ok(markdown) => check_targets(
+                &page,
+                page.parent().unwrap_or(&source),
+                &markdown,
+                "relative Markdown link does not resolve",
+                &mut diagnostics,
+            ),
+            Err(error) => diagnostics.push(Diagnostic {
+                path: page,
+                line: None,
+                message: format!("cannot read Markdown page: {error}"),
+            }),
+        }
+    }
+    diagnostics
+}
+
+fn check_targets(
+    source: &Path,
+    base: &Path,
+    markdown: &str,
+    missing_message: &str,
+    diagnostics: &mut Vec<Diagnostic>,
+) {
+    for (line, target) in inline_targets(markdown) {
+        if is_external(&target) {
+            continue;
+        }
+        if is_machine_specific(&target) {
+            diagnostics.push(Diagnostic {
+                path: source.to_path_buf(),
+                line: Some(line),
+                message: "absolute or machine-specific Markdown path is not allowed".to_owned(),
+            });
+            continue;
+        }
+        let target = target.split('#').next().unwrap_or_default();
+        if !target.is_empty() && !base.join(target).is_file() {
+            diagnostics.push(Diagnostic {
+                path: source.to_path_buf(),
+                line: Some(line),
+                message: missing_message.to_owned(),
+            });
+        }
+    }
+}
+
+fn collect_markdown(directory: &Path, pages: &mut Vec<PathBuf>, diagnostics: &mut Vec<Diagnostic>) {
+    let entries = match fs::read_dir(directory) {
+        Ok(entries) => entries,
+        Err(error) => {
+            diagnostics.push(Diagnostic {
+                path: directory.to_path_buf(),
+                line: None,
+                message: format!("cannot read book source directory: {error}"),
+            });
+            return;
+        }
+    };
+    let mut paths = Vec::new();
+    for entry in entries {
+        match entry {
+            Ok(entry) => paths.push(entry.path()),
+            Err(error) => diagnostics.push(Diagnostic {
+                path: directory.to_path_buf(),
+                line: None,
+                message: format!("cannot read book source entry: {error}"),
+            }),
+        }
+    }
+    paths.sort();
+    for path in paths {
+        if path.is_dir() {
+            collect_markdown(&path, pages, diagnostics);
+        } else if path.extension().and_then(|extension| extension.to_str()) == Some("md") {
+            pages.push(path);
+        }
+    }
+}
+
+fn is_external(target: &str) -> bool {
+    ["http:", "https:", "mailto:"]
+        .iter()
+        .any(|scheme| target.starts_with(scheme))
+}
+
+fn is_machine_specific(target: &str) -> bool {
+    let bytes = target.as_bytes();
+    target.starts_with('/')
+        || target.starts_with('\\')
+        || target.starts_with("~/")
+        || (bytes.len() > 1 && bytes[0].is_ascii_alphabetic() && bytes[1] == b':')
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use std::{
+        fs,
+        path::PathBuf,
+        time::{SystemTime, UNIX_EPOCH},
+    };
+
+    fn fixture(summary: &str, index: &str) -> PathBuf {
+        let root = std::env::temp_dir().join(format!(
+            "maestro-sitecheck-book-{}",
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("clock")
+                .as_nanos()
+        ));
+        fs::create_dir_all(root.join("src")).expect("fixture source directory");
+        fs::write(root.join("src/SUMMARY.md"), summary).expect("fixture summary");
+        fs::write(root.join("src/index.md"), index).expect("fixture index");
+        root
+    }
+
+    #[test]
+    fn reports_a_summary_page_that_does_not_exist() {
+        let root = fixture("[Missing](missing.md)\n", "# Home\n");
+
+        let diagnostics = check(&root);
+
+        assert!(
+            diagnostics
+                .iter()
+                .any(|diagnostic| diagnostic.message == "SUMMARY references a missing page")
+        );
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+
+    #[test]
+    fn reports_a_broken_relative_link() {
+        let root = fixture("[Home](index.md)\n", "[Missing](missing.md)\n");
+
+        let diagnostics = check(&root);
+
+        assert!(
+            diagnostics.iter().any(|diagnostic| {
+                diagnostic.message == "relative Markdown link does not resolve"
+            })
+        );
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+
+    #[test]
+    fn accepts_existing_fragments_and_external_links() {
+        let root = fixture(
+            "[Home](index.md)\n",
+            "[Section](target.md#section) [Web](https://example.com) [Mail](mailto:a@example.com)\n",
+        );
+        fs::write(root.join("src/target.md"), "# Section\n").expect("target page");
+
+        let diagnostics = check(&root);
+
+        assert!(diagnostics.is_empty(), "{diagnostics:?}");
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+
+    #[test]
+    fn rejects_machine_specific_paths() {
+        let root = fixture(
+            "[Home](index.md)\n",
+            "[Unix](/etc/passwd) [Windows](C:\\Users\\person\\file.md) [Drive](D:relative.md)\n",
+        );
+
+        let diagnostics = check(&root);
+
+        assert_eq!(
+            diagnostics
+                .iter()
+                .filter(|diagnostic| diagnostic.message.contains("machine-specific"))
+                .count(),
+            3
+        );
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+
+    #[test]
+    fn checks_nested_markdown_pages() {
+        let root = fixture("[Home](index.md)\n", "# Home\n");
+        fs::create_dir(root.join("src/nested")).expect("nested fixture directory");
+        fs::write(root.join("src/nested/page.md"), "[Missing](missing.md)\n")
+            .expect("nested fixture page");
+
+        let diagnostics = check(&root);
+
+        assert!(diagnostics.iter().any(|diagnostic| {
+            diagnostic.path.ends_with("nested/page.md")
+                && diagnostic.message == "relative Markdown link does not resolve"
+        }));
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+}
