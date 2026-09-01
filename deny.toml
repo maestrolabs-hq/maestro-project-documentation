@@ -10,10 +10,7 @@ yanked = "deny"
 # The list holds exactly what the tree uses: an unmatched allowance is a
 # warning, and this repository's bar is warning-free. Widen it when a
 # dependency arrives that needs it.
-# Apache-2.0 is required by the MCP client; 0BSD by the portable local-socket
-# implementation; Zlib and Unicode-3.0 by their transitive data-structure and
-# parser dependencies. All are permissive and compatible with this repository.
-allow = ["MIT", "Apache-2.0", "0BSD", "Zlib", "Unicode-3.0"]
+allow = ["MIT"]
 confidence-threshold = 0.93
 
 [bans]
