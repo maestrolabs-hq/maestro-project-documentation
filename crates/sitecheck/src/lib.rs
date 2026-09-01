@@ -1,6 +1,7 @@
 //! Validation for the governed repository and the mdBook it publishes.
 
 mod book;
+mod claim;
 mod diagnostic;
 mod markdown;
 mod required;

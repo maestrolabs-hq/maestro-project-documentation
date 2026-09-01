@@ -1,0 +1,12 @@
+# Minimal Pages workflow file required by the valid repository fixture.
+name: Fixture Pages
+
+on: workflow_dispatch
+
+permissions: {}
+
+jobs:
+  fixture:
+    runs-on: ubuntu-latest
+    steps:
+      - run: "true"

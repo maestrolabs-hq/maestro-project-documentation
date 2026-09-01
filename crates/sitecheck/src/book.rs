@@ -1,6 +1,6 @@
 //! mdBook navigation and relative-link checks rooted at the repository.
 
-use crate::{Diagnostic, markdown::inline_targets};
+use crate::{Diagnostic, claim, markdown::inline_targets};
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -23,6 +23,7 @@ pub fn check(root: &Path) -> Vec<Diagnostic> {
         }
     };
 
+    diagnostics.extend(claim::check(&summary, &summary_markdown));
     check_targets(
         &summary,
         &source,
@@ -38,13 +39,16 @@ pub fn check(root: &Path) -> Vec<Diagnostic> {
             continue;
         }
         match fs::read_to_string(&page) {
-            Ok(markdown) => check_targets(
-                &page,
-                page.parent().unwrap_or(&source),
-                &markdown,
-                "relative Markdown link does not resolve",
-                &mut diagnostics,
-            ),
+            Ok(markdown) => {
+                check_targets(
+                    &page,
+                    page.parent().unwrap_or(&source),
+                    &markdown,
+                    "relative Markdown link does not resolve",
+                    &mut diagnostics,
+                );
+                diagnostics.extend(claim::check(&page, &markdown));
+            }
             Err(error) => diagnostics.push(Diagnostic {
                 path: page,
                 line: None,
