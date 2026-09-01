@@ -3,7 +3,7 @@
 use crate::{Diagnostic, claim, markdown::inline_targets};
 use std::{
     fs,
-    path::{Path, PathBuf},
+    path::{Component, Path, PathBuf},
 };
 
 #[must_use]
@@ -24,13 +24,13 @@ pub fn check(root: &Path) -> Vec<Diagnostic> {
     };
 
     diagnostics.extend(claim::check(&summary, &summary_markdown));
-    check_targets(
+    diagnostics.extend(check_targets(
         &summary,
+        &source,
         &source,
         &summary_markdown,
         "SUMMARY references a missing page",
-        &mut diagnostics,
-    );
+    ));
 
     let mut pages = Vec::new();
     collect_markdown(&source, &mut pages, &mut diagnostics);
@@ -40,13 +40,13 @@ pub fn check(root: &Path) -> Vec<Diagnostic> {
         }
         match fs::read_to_string(&page) {
             Ok(markdown) => {
-                check_targets(
+                diagnostics.extend(check_targets(
                     &page,
+                    &source,
                     page.parent().unwrap_or(&source),
                     &markdown,
                     "relative Markdown link does not resolve",
-                    &mut diagnostics,
-                );
+                ));
                 diagnostics.extend(claim::check(&page, &markdown));
             }
             Err(error) => diagnostics.push(Diagnostic {
@@ -61,11 +61,12 @@ pub fn check(root: &Path) -> Vec<Diagnostic> {
 
 fn check_targets(
     source: &Path,
+    source_root: &Path,
     base: &Path,
     markdown: &str,
     missing_message: &str,
-    diagnostics: &mut Vec<Diagnostic>,
-) {
+) -> Vec<Diagnostic> {
+    let mut diagnostics = Vec::new();
     for (line, target) in inline_targets(markdown) {
         if is_external(&target) {
             continue;
@@ -79,7 +80,22 @@ fn check_targets(
             continue;
         }
         let target = target.split('#').next().unwrap_or_default();
-        if !target.is_empty() && !base.join(target).is_file() {
+        if target.is_empty() {
+            continue;
+        }
+        if !stays_within_source(source_root, base, target) {
+            diagnostics.push(Diagnostic {
+                path: source.to_path_buf(),
+                line: Some(line),
+                message: "Markdown path escapes the book source directory".to_owned(),
+            });
+            continue;
+        }
+        let path = base.join(target);
+        let exists = path.is_file()
+            || (path.extension().and_then(|extension| extension.to_str()) == Some("html")
+                && path.with_extension("md").is_file());
+        if !exists {
             diagnostics.push(Diagnostic {
                 path: source.to_path_buf(),
                 line: Some(line),
@@ -87,6 +103,27 @@ fn check_targets(
             });
         }
     }
+    diagnostics
+}
+
+fn stays_within_source(source_root: &Path, base: &Path, target: &str) -> bool {
+    let Ok(relative_base) = base.strip_prefix(source_root) else {
+        return false;
+    };
+    let mut depth = relative_base
+        .components()
+        .filter(|component| matches!(component, Component::Normal(_)))
+        .count();
+    for component in Path::new(target).components() {
+        match component {
+            Component::ParentDir if depth == 0 => return false,
+            Component::ParentDir => depth -= 1,
+            Component::Normal(_) => depth += 1,
+            Component::CurDir => {}
+            Component::Prefix(_) | Component::RootDir => return false,
+        }
+    }
+    true
 }
 
 fn collect_markdown(directory: &Path, pages: &mut Vec<PathBuf>, diagnostics: &mut Vec<Diagnostic>) {
@@ -248,6 +285,53 @@ mod tests {
                 .count(),
             3
         );
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+
+    #[test]
+    fn rejects_machine_specific_html_targets() {
+        let root = fixture(
+            "[Home](index.md)\n",
+            "<a href=\"/etc/passwd\">Absolute</a>\n",
+        );
+
+        let diagnostics = check(&root);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, Some(1));
+        assert_eq!(
+            diagnostics[0].message,
+            "absolute or machine-specific Markdown path is not allowed"
+        );
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+
+    #[test]
+    fn rejects_targets_that_escape_the_book_source() {
+        let root = fixture("[Home](index.md)\n", "[Outside](../outside.md)\n");
+        fs::write(root.join("outside.md"), "# Outside\n").expect("outside fixture page");
+
+        let diagnostics = check(&root);
+
+        assert_eq!(diagnostics.len(), 1);
+        assert_eq!(diagnostics[0].line, Some(1));
+        assert_eq!(
+            diagnostics[0].message,
+            "Markdown path escapes the book source directory"
+        );
+        fs::remove_dir_all(root).expect("remove fixture");
+    }
+
+    #[test]
+    fn accepts_parent_navigation_within_the_book_source() {
+        let root = fixture("[Home](index.md)\n", "# Home\n");
+        fs::create_dir(root.join("src/nested")).expect("nested fixture directory");
+        fs::write(root.join("src/nested/page.md"), "[Home](../index.md)\n")
+            .expect("nested fixture page");
+
+        let diagnostics = check(&root);
+
+        assert!(diagnostics.is_empty(), "{diagnostics:?}");
         fs::remove_dir_all(root).expect("remove fixture");
     }
 
