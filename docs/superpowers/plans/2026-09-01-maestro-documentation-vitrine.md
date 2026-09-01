@@ -25,6 +25,8 @@
 - Accessibility basics are required: semantic landmarks, visible focus, keyboard navigation, sufficient contrast, alternative text, and reduced-motion behavior.
 - Keep the generated mdBook output in `build/`, which the shared `.gitignore` already excludes.
 - Keep `.superpowers/` local through `.git/info/exclude`; do not change the baseline-pinned `.gitignore`.
+- Tasks 7-8 are a blocking onboarding dependency for graph-lifecycle governance and the focused workspace-intelligence documentation plan. Do not treat a prepared local baseline edit as onboarding: the documentation repository, required contexts, merged tracked-file scopes, and post-merge `governance plan` must all be green first.
+- After onboarding, execute `docs/superpowers/plans/2026-09-01-workspace-intelligence-documentation.md` to extend the bootstrap navigation to all six repository lanes and the workspace-intelligence capability.
 
 ---
 

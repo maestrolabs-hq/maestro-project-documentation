@@ -1,6 +1,8 @@
 # Maestro documentation vitrine design
 
-Status: approved in conversation; awaiting written-spec review.
+Status: Approved
+
+Approval basis: the user explicitly approved including `maestro-project-documentation` as the sixth Maestro repository lane and directed this design to proceed.
 
 ## Purpose
 
@@ -47,6 +49,7 @@ maestro-project-documentation/
 │   ├── index.md
 │   ├── overture/
 │   ├── method/
+│   ├── capabilities/
 │   ├── estate/
 │   ├── delivery/
 │   ├── evidence/
@@ -145,14 +148,23 @@ The GitHub repository is:
 - Decisions beside code
 - Rebuilding from source
 
+### Capabilities
+
+- Workspace intelligence
+
+The workspace-intelligence page explains trusted workspace discovery, separate repository-graph and workspace-context results, architecture validation/render/delivery, and durable lifecycle refresh through stable Maestro commands and artifact references. It links to core and Pi-config primary documents without copying provider names, versions, pins, native schemas, retry internals, or executable policy.
+
 ### Estate
 
 - Ecosystem map
+- maestro-manifests
 - maestro-core
-- maestro-governance
 - maestro-pi-config
+- dot-github
+- maestro-governance
+- maestro-project-documentation
 
-Repository pages explain roles and relationships. They link to repository-local documents instead of copying them.
+These are the six repository ownership lanes. Repository pages explain roles, non-ownership boundaries, relationships, and current status. They link to repository-local documents instead of copying them. The estate index and source-authority table must list all six even when a capability remains only `designed`.
 
 ### Delivery
 
@@ -317,7 +329,7 @@ The bootstrap is complete when:
 6. the site contains the approved top-level navigation and honest status vocabulary;
 7. invalid structure or unsourced claim blocks fail with actionable diagnostics;
 8. the Pages workflow can publish from `main`;
-9. governance onboarding changes are prepared, including baseline coverage and required contexts;
+9. governance onboarding is merged and verified before any cross-repository lifecycle rollout depends on this lane, including baseline coverage, required contexts, and a zero-drift audit;
 10. no repository-local fact is duplicated as a second source of truth;
 11. the site works on narrow screens, by keyboard, and with reduced motion.
 
