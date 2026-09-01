@@ -17,6 +17,8 @@ preferred-dark-theme = "navy"
 smart-punctuation = true
 git-repository-url = "https://github.com/maestrolabs-hq/maestro-project-documentation"
 edit-url-template = "https://github.com/maestrolabs-hq/maestro-project-documentation/edit/main/{path}"
+additional-css = ["theme/css/maestro.css"]
+additional-js = ["theme/maestro.js"]
 no-section-label = true
 
 [output.html.search]
