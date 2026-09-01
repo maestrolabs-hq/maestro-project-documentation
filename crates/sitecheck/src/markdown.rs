@@ -44,6 +44,15 @@ fn html_targets(line: &str) -> Vec<&str> {
         match bytes[cursor] {
             b'<' => in_tag = true,
             b'>' => in_tag = false,
+            quote @ (b'\'' | b'"') if in_tag => {
+                let value_start = cursor + 1;
+                let Some(relative_end) =
+                    bytes[value_start..].iter().position(|byte| *byte == quote)
+                else {
+                    break;
+                };
+                cursor = value_start + relative_end;
+            }
             _ if in_tag => {
                 let name_length = if bytes[cursor..]
                     .get(..4)
@@ -125,6 +134,14 @@ mod tests {
         assert_targets(
             "first\n<a href=\"guide.html\">Guide</a>\n<img src='images/map.svg' alt=''>\n",
             &[(2, "guide.html"), (3, "images/map.svg")],
+        );
+    }
+
+    #[test]
+    fn keeps_scanning_after_greater_than_inside_quoted_attribute() {
+        assert_targets(
+            "<a title=\">\" href=\"/etc/passwd\">Absolute</a>\n<img title='>' src='images/map.svg'>\n",
+            &[(1, "/etc/passwd"), (2, "images/map.svg")],
         );
     }
 
