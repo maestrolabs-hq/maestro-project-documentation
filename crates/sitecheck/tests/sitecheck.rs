@@ -36,7 +36,7 @@ fn invalid_fixture_makes_the_cli_fail() {
         .output()
         .expect("run sitecheck");
 
-    assert!(!output.status.success());
+    assert_eq!(output.status.code(), Some(1));
     let stderr = String::from_utf8(output.stderr).expect("UTF-8 diagnostics");
     assert!(stderr.contains("relative Markdown link does not resolve"));
     assert!(stderr.contains("unknown Maestro status `planned`"));

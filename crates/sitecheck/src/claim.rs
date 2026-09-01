@@ -5,14 +5,25 @@ use std::path::Path;
 
 #[must_use]
 pub fn check(path: &Path, markdown: &str) -> Vec<Diagnostic> {
+    let lines: Vec<&str> = markdown.lines().collect();
     let mut diagnostics = Vec::new();
-    for (index, line) in markdown.lines().enumerate() {
+    let mut index = 0;
+    while index < lines.len() {
+        let line = lines[index];
         let claim = line.contains("class=\"maestro-claim\"");
         if !claim && !line.contains("class=\"maestro-status\"") {
+            index += 1;
             continue;
         }
         let line_number = index + 1;
-        match attribute(line, "data-status") {
+        let marker = if claim {
+            let (opening_tag, end) = collect_opening_tag(&lines, index);
+            index = end;
+            opening_tag
+        } else {
+            line.to_owned()
+        };
+        match attribute(&marker, "data-status") {
             Some(status) if valid_status(status) => {}
             Some(status) => diagnostics.push(diagnostic(
                 path,
@@ -26,10 +37,22 @@ pub fn check(path: &Path, markdown: &str) -> Vec<Diagnostic> {
             )),
         }
         if claim {
-            validate_claim(path, line_number, line, &mut diagnostics);
+            validate_claim(path, line_number, &marker, &mut diagnostics);
         }
+        index += 1;
     }
     diagnostics
+}
+
+fn collect_opening_tag(lines: &[&str], start: usize) -> (String, usize) {
+    let mut tag = lines[start].to_owned();
+    let mut end = start;
+    while !tag.contains('>') && end + 1 < lines.len() {
+        end += 1;
+        tag.push('\n');
+        tag.push_str(lines[end]);
+    }
+    (tag, end)
 }
 
 fn validate_claim(path: &Path, line_number: usize, line: &str, diagnostics: &mut Vec<Diagnostic>) {
@@ -110,9 +133,11 @@ fn valid_line_anchor(anchor: &str) -> bool {
     let Some(first) = lines.next() else {
         return false;
     };
-    !first.is_empty()
-        && first.bytes().all(|byte| byte.is_ascii_digit())
-        && lines.all(|line| !line.is_empty() && line.bytes().all(|byte| byte.is_ascii_digit()))
+    valid_line_number(first) && lines.next().is_none_or(valid_line_number) && lines.next().is_none()
+}
+
+fn valid_line_number(line: &str) -> bool {
+    !line.is_empty() && line.bytes().all(|byte| byte.is_ascii_digit())
 }
 
 fn valid_date(date: &str) -> bool {
@@ -190,17 +215,29 @@ mod tests {
     }
 
     #[test]
-    fn rejects_claim_metadata_split_across_lines() {
+    fn accepts_claim_metadata_across_the_opening_tag() {
+        const SOURCE: &str = "https://github.com/maestrolabs-hq/maestro-core/blob/0123456789abcdef0123456789abcdef01234567/README.md#L1-L4";
+        let markdown = format!(
+            "<div class=\"maestro-claim\"\n     data-status=\"built\"\n     data-source=\"{SOURCE}\"\n     data-verified=\"2026-09-01\">\n  <p>The factual assertion.</p>\n</div>\n"
+        );
+
+        let diagnostics = check(Path::new("claims.md"), &markdown);
+
+        assert!(diagnostics.is_empty(), "{diagnostics:?}");
+    }
+
+    #[test]
+    fn reports_multiline_claim_errors_on_the_opening_line() {
         let diagnostics = check(
             Path::new("claims.md"),
-            "<div class=\"maestro-claim\"\n data-status=\"built\" data-source=\"ignored\" data-verified=\"2026-09-01\">\n",
+            "first line\n<div class=\"maestro-claim\"\n     data-status=\"planned\"\n     data-source=\"https://github.com/maestrolabs-hq/maestro-core/blob/main/README.md#L1\"\n     data-verified=\"September 1\">\n",
         );
 
         assert_eq!(diagnostics.len(), 3);
         assert!(
             diagnostics
                 .iter()
-                .all(|diagnostic| diagnostic.line == Some(1))
+                .all(|diagnostic| diagnostic.line == Some(2))
         );
     }
 
@@ -236,7 +273,7 @@ mod tests {
     }
 
     #[test]
-    fn accepts_an_immutable_source_and_verification_date() {
+    fn accepts_an_immutable_source_and_verification_date_on_one_line() {
         const SOURCE: &str = "https://github.com/maestrolabs-hq/maestro-core/blob/0123456789abcdef0123456789abcdef01234567/README.md#L1-L4";
         let markdown = format!(
             "<div class=\"maestro-claim\" data-status=\"built\" data-source=\"{SOURCE}\" data-verified=\"2026-09-01\">\n"
@@ -245,6 +282,19 @@ mod tests {
         let diagnostics = check(Path::new("claims.md"), &markdown);
 
         assert!(diagnostics.is_empty(), "{diagnostics:?}");
+    }
+
+    #[test]
+    fn rejects_a_repeated_line_range() {
+        const SOURCE: &str = "https://github.com/maestrolabs-hq/maestro-core/blob/0123456789abcdef0123456789abcdef01234567/README.md#L1-L2-L3";
+        let markdown = format!(
+            "<div class=\"maestro-claim\" data-status=\"built\" data-source=\"{SOURCE}\" data-verified=\"2026-09-01\">\n"
+        );
+
+        let diagnostics = check(Path::new("claims.md"), &markdown);
+
+        assert!(diagnostics.iter().any(|diagnostic| diagnostic.message
+            == "Maestro claim source must be an immutable GitHub permalink with a 40-character commit hash and line anchor"));
     }
 
     #[test]
