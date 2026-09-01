@@ -77,6 +77,37 @@ fn all_prose_is_english() {
     );
 }
 
+#[test]
+fn a_failed_similarity_process_cannot_report_green() {
+    let error = duplication_from_process(false, b"", b"invalid arguments\n")
+        .expect_err("a failed process must be an error");
+
+    assert_eq!(error, "similarity-rs failed: invalid arguments");
+}
+
+fn duplication_from_process(
+    success: bool,
+    stdout: &[u8],
+    stderr: &[u8],
+) -> Result<BTreeSet<String>, String> {
+    if !success {
+        return Err(format!(
+            "similarity-rs failed: {}",
+            String::from_utf8_lossy(stderr).trim()
+        ));
+    }
+
+    Ok(String::from_utf8_lossy(stdout)
+        .lines()
+        .filter(|line| !line.trim_start().starts_with("Classes:"))
+        .filter_map(|line| {
+            let (left, right) = line.split_once(" <-> ")?;
+            let name = |side: &str| side.split_whitespace().last().map(str::to_owned);
+            Some(format!("{} <-> {}", name(left)?, name(right)?))
+        })
+        .collect())
+}
+
 fn detected_duplication() -> BTreeSet<String> {
     let output = Command::new("similarity-rs")
         .args(["--threshold", "0.85", "crates"])
@@ -87,15 +118,9 @@ fn detected_duplication() -> BTreeSet<String> {
              A gate that skips when its tool is missing reports green while \
              looking at nothing.",
         );
-    String::from_utf8_lossy(&output.stdout)
-        .lines()
-        .filter(|line| !line.trim_start().starts_with("Classes:"))
-        .filter_map(|line| {
-            let (left, right) = line.split_once(" <-> ")?;
-            let name = |side: &str| side.split_whitespace().last().map(str::to_owned);
-            Some(format!("{} <-> {}", name(left)?, name(right)?))
-        })
-        .collect()
+
+    duplication_from_process(output.status.success(), &output.stdout, &output.stderr)
+        .unwrap_or_else(|error| panic!("{error}"))
 }
 
 #[test]
