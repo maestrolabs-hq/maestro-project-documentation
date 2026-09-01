@@ -16,7 +16,7 @@ The site presents the engineering method as the evidence behind Maestro. It dist
 1. **Repository-local facts stay local.** Each Maestro repository remains authoritative for its implementation, decisions, and work.
 2. **This repository owns the estate view.** It explains how the repositories fit together, records Maestro-level vocabulary, and presents the central roadmap.
 3. **Actual and future are visibly different.** Every roadmap item is `built`, `in-progress`, `designed`, or `exploring`.
-4. **Claims carry evidence.** Factual claims link to immutable GitHub permalinks pinned to commit SHAs.
+4. **Claims carry evidence.** Factual assertions that need machine verification use explicit claim blocks linked to immutable GitHub permalinks pinned to commit SHAs. Human review remains responsible for ordinary prose.
 5. **The site follows the standard it presents.** The repository is governed, tested, cross-platform, and publishable only when its checks pass.
 6. **Rust-native and dependency-light.** mdBook provides the site; one small Rust binary provides repository-specific checks. There is no npm toolchain.
 
@@ -49,11 +49,12 @@ maestro-project-documentation/
 │   ├── method/
 │   ├── estate/
 │   ├── delivery/
-│   └── evidence/
+│   ├── evidence/
+│   └── images/
 ├── theme/
 │   ├── css/
-│   ├── images/
-│   ├── index.hbs
+│   ├── fonts/
+│   ├── favicon.svg
 │   └── maestro.js
 ├── .editorconfig
 ├── .gitattributes
@@ -167,7 +168,7 @@ The roadmap presents `built`, `in-progress`, `designed`, and `exploring` work. I
 - ADR index
 - Source repositories
 
-A factual claim must include an immutable GitHub permalink. The page may state when it was last verified, but must not imply that old evidence is current.
+A machine-verified factual assertion uses an explicit claim block containing an immutable GitHub permalink. The page may state when it was last verified, but must not imply that old evidence is current. Assertions outside claim blocks are reviewed as prose rather than presented as machine-verified.
 
 ## Idea-to-production model
 
@@ -249,8 +250,8 @@ Theme behavior uses minimal vanilla JavaScript. There is no npm dependency, anim
 - `src/SUMMARY.md` and referenced pages agree;
 - internal links resolve;
 - status values belong to the approved set;
-- factual-claim source links are GitHub permalinks pinned to commit SHAs;
-- required source metadata is present;
+- every explicit claim block has a GitHub permalink pinned to a commit SHA;
+- required claim metadata is present;
 - generated-site inputs do not contain machine-specific paths.
 
 Failures identify the path, line, and violated rule. The first implementation uses the standard library unless a real parser requirement proves a dependency necessary.
@@ -285,7 +286,7 @@ The site is not published when:
 - navigation references a missing page;
 - an internal link is broken;
 - a status is unknown;
-- a factual claim lacks immutable evidence;
+- an explicit claim block lacks immutable evidence;
 - Rust validation fails;
 - mdBook examples or the site build fail.
 
@@ -314,7 +315,7 @@ The bootstrap is complete when:
 4. mdBook builds the Obsidian Score site without npm;
 5. The Institution wordmark ships as local SVG and font assets with its license;
 6. the site contains the approved top-level navigation and honest status vocabulary;
-7. invalid structure or unsourced claims fail with actionable diagnostics;
+7. invalid structure or unsourced claim blocks fail with actionable diagnostics;
 8. the Pages workflow can publish from `main`;
 9. governance onboarding changes are prepared, including baseline coverage and required contexts;
 10. no repository-local fact is duplicated as a second source of truth;
