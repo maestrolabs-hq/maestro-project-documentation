@@ -27,3 +27,4 @@ through an explicit client boundary.
 - [North star](https://github.com/maestrolabs-hq/maestro-pi-config/blob/main/NORTHSTAR.md)
 - [Open work](https://github.com/maestrolabs-hq/maestro-pi-config/blob/main/TODO.md)
 - [Architecture](https://github.com/maestrolabs-hq/maestro-pi-config/blob/main/docs/architecture.md)
+- [Accepted decision: shims delegate to Maestro](https://github.com/maestrolabs-hq/maestro-pi-config/blob/main/docs/adr/0001-shims-delegate-to-maestro.md)
