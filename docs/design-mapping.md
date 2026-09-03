@@ -70,14 +70,17 @@ that same rendering, and must draw only from tokens already declared in
 
 | Status | Candidate token | Hex | Contrast vs `{colors.canvas}` | WCAG AA small text (4.5:1) |
 | --- | --- | --- | --- | --- |
-| `built` | `{colors.success}` | `#0070f3` | 4.55:1 | Pass (marginal) |
+| `built` | `{colors.link-deep}` | `#0761d1` | 5.77:1 | Pass |
 | `in-progress` | `{colors.warning}` | `#f5a623` | 2.03:1 | **Fail** |
 | `in-progress` (revised) | `{colors.warning-deep}` | `#ab570a` | 5.12:1 | Pass |
 | `designed` | `{colors.violet}` | `#7928ca` | 7.07:1 | Pass |
 | `exploring` | `{colors.cyan}` | `#50e3c2` | 1.60:1 | **Fail** |
 | `exploring` (revised) | `{colors.cyan-deep}` | `#29bc9b` | 2.40:1 | **Fail** |
 
-Proposed mapping: `built` -> `{colors.success}`, `in-progress` ->
+Implemented mapping: `built` -> `{colors.link-deep}` (not the bare
+`{colors.success}` token, which passes at only 4.55:1, a hair over the 4.5
+floor; `{colors.link-deep}` gives 5.77:1 for the same reason `in-progress`
+takes the deep variant of its own hue), `in-progress` ->
 `{colors.warning-deep}` (not the bare `{colors.warning}` token, which fails
 outright), `designed` -> `{colors.violet}`. `{colors.warning}` and
 `{colors.cyan}` both read as fills or accents inside `DESIGN.md`'s own

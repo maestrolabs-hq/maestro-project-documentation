@@ -52,8 +52,12 @@
      check only covered {colors.canvas}, and built/in-progress/designed all
      fail 4.5:1 as text against the dark variant's {colors.ink} page (see
      PR report). A fixed-background chip keeps every status legible on both
-     surfaces without adding a colour outside DESIGN.md's token set. */
-  --design-status-built: var(--design-success);
+     surfaces without adding a colour outside DESIGN.md's token set.
+     `built` uses {colors.link-deep}, not {colors.success}: both are the same
+     blue family, but success/link (#0070f3) on white text is only 4.55:1, a
+     hair over the 4.5 AA floor for small text -- link-deep (#0761d1) gives
+     5.77:1, comfortable margin, same token set, same hue. */
+  --design-status-built: var(--design-link-deep);
   --design-status-built-fg: var(--design-on-primary);
   --design-status-in-progress: var(--design-warning-deep);
   --design-status-in-progress-fg: var(--design-on-primary);
@@ -292,6 +296,12 @@ body {
   overflow: hidden;
   padding: clamp(2.5rem, 7vw, 6rem) 0 clamp(2.75rem, 7vw, 5.5rem);
   position: relative;
+  /* Establishes a local stacking context so the negative z-index on the two
+     decorative pseudo-elements below sinks them only to the bottom of this
+     element's own children, not past this element's position in the page
+     (without this, they sink below the page body's own background paint and
+     disappear entirely). */
+  z-index: 0;
 }
 
 /* The brand's only decorative chrome, per DESIGN.md: a multi-stop mesh
@@ -299,6 +309,11 @@ body {
    hero scale only and never appearing on an ordinary page -- .maestro-hero
    is not used outside src/index.md. Treated as one atmospheric backdrop:
    the three pairs are not split, reordered, or reduced to a single colour. */
+/* z-index keeps both decorative layers below the hero's real content
+   (wordmark, kicker, headline, lede, actions), which all default to the
+   z-index:auto/0 stacking level -- without it, ::after paints last in
+   generated-content order and its fade-to-bg wash washes out the wordmark
+   on any viewport narrow enough for the two to overlap (see PR report). */
 .maestro-hero::before {
   background:
     radial-gradient(circle at 82% -12%, var(--design-gradient-preview-end), transparent 46%),
@@ -315,10 +330,38 @@ body {
   right: -14rem;
   top: -16rem;
   width: 42rem;
+  z-index: -2;
 }
 
 .navy .maestro-hero::before {
   opacity: 0.4;
+}
+
+/* .maestro-hero clips its overflow, and this box is offset so most of it
+   sits above and to the right of the hero (a deliberate off-canvas bleed).
+   The box's own right side is cut at 66.7% of its width, its own top side
+   at 38.1% of its height (the rest of each edge is already off-canvas and
+   never rendered) -- well before the gradient layers above have faded out,
+   which reads as a hard-edged rectangle rather than DESIGN.md's "never
+   cropped to a frame" wash. This overlay repaints the same box, fading to
+   the page's own --bg (identical on both sides of each seam: the sticky
+   menu bar above the hero and the page margin to its right both already use
+   --bg) so each seam falls across pixels that already match what sits
+   beyond it -- solid near the right seam growing outward from it, and solid
+   near the top seam fading inward from it, since that seam sits at the
+   visible region's own top edge rather than its far edge. */
+.maestro-hero::after {
+  background:
+    linear-gradient(to right, transparent 0%, transparent 48%, var(--bg) 64%),
+    linear-gradient(to bottom, var(--bg) 0%, var(--bg) 44%, transparent 64%);
+  content: "";
+  height: 42rem;
+  pointer-events: none;
+  position: absolute;
+  right: -14rem;
+  top: -16rem;
+  width: 42rem;
+  z-index: -1;
 }
 
 .maestro-hero__wordmark {
@@ -604,8 +647,16 @@ html:not(.js) .maestro-sidebar-wordmark {
   z-index: 1000;
 }
 
+/* mdBook's own .left-buttons siblings (#mdbook-theme-toggle,
+   #mdbook-search-toggle) have no explicit height: they stretch to fill the
+   50px #mdbook-menu-bar row and center their glyph via line-height: 50px.
+   This button sets an explicit height, so flex stretch does not apply to it
+   and it falls back to the cross-axis start (the row's top edge) instead of
+   the row's center -- align-self makes it share the same centerline as
+   those siblings. */
 .maestro-command-trigger {
   align-items: center;
+  align-self: center;
   background: transparent;
   border: 1px solid var(--sidebar-spacer);
   border-radius: var(--design-radius-sm);
