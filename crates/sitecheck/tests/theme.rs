@@ -95,3 +95,44 @@ fn status_chip_fills_reset_to_transparent_in_print() {
     ));
     assert!(print.contains("border: 1px solid #777 !important;"));
 }
+
+/// mdBook's own `.left-buttons` siblings (`#mdbook-theme-toggle`,
+/// `#mdbook-search-toggle`) have no explicit height, so they stretch to fill
+/// the menu bar row and centre their glyph via line-height. This button sets
+/// an explicit height, which drops the flex fallback for that axis to the
+/// row's cross-start (its top) instead of its centre -- align-self restores
+/// the shared centreline (see PR report for the measured before/after box).
+#[test]
+fn command_trigger_shares_the_left_buttons_centerline() {
+    let css = theme_css();
+
+    assert!(
+        css.contains(".maestro-command-trigger {\n  align-items: center;\n  align-self: center;")
+    );
+}
+
+/// DESIGN.md requires the mesh gradient to read as a "full-bleed" wash,
+/// "never cropped to a frame" -- but `.maestro-hero` clips its overflow, and
+/// the pseudo-element's own box is offset so most of it sits outside that
+/// clip, cutting straight through the gradient's still-visible colour. This
+/// overlay fades the same box to `--bg` before each clip seam, so the cut
+/// falls across pixels that already match what sits beyond it.
+#[test]
+fn hero_gradient_fades_to_bg_before_its_own_clip_seams() {
+    let css = theme_css();
+
+    assert!(css.contains(
+        ".maestro-hero::after {\n  background:\n    linear-gradient(to right, transparent 0%, transparent 48%, var(--bg) 64%),\n    linear-gradient(to bottom, var(--bg) 0%, var(--bg) 44%, transparent 64%);"
+    ));
+}
+
+/// `built` uses `{colors.link-deep}`, not `{colors.success}`: both are the
+/// same blue family, but success/link (#0070f3) on white chip text is only
+/// 4.55:1, a hair over the 4.5 AA floor for small text -- link-deep
+/// (#0761d1) gives 5.77:1 of headroom for the same hue.
+#[test]
+fn built_status_chip_clears_aa_with_headroom() {
+    let css = theme_css();
+
+    assert!(css.contains("--design-status-built: var(--design-link-deep);"));
+}
