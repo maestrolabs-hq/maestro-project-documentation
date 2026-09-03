@@ -28,6 +28,13 @@ Use only these status values:
 - `designed`
 - `exploring`
 
+## Visual contract
+
+`DESIGN.md` at the repository root is the visual contract for `theme/`. It is
+captured third-party content, kept verbatim, and is never reformatted or
+edited to fit. Read it, and `docs/design-mapping.md`, before changing
+anything under `theme/`.
+
 ## Working rules
 
 Think before editing. Prefer the smallest change that keeps the estate view

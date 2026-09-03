@@ -21,6 +21,7 @@ pub const REQUIRED_FILES: &[&str] = &[
     "CONTEXT.md",
     "Cargo.lock",
     "Cargo.toml",
+    "DESIGN.md",
     "LICENSE",
     "NORTHSTAR.md",
     "README.md",
@@ -54,6 +55,11 @@ mod tests {
         fs,
         time::{SystemTime, UNIX_EPOCH},
     };
+
+    #[test]
+    fn design_md_is_a_required_file() {
+        assert!(REQUIRED_FILES.contains(&"DESIGN.md"));
+    }
 
     #[test]
     fn reports_a_missing_required_file() {
