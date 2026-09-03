@@ -1,8 +1,53 @@
-/* The Institution wordmark and editorial headings use a locally bundled face. */
+/* Geist and Geist Mono, self-hosted per DESIGN.md's "two custom faces carry
+   the entire system" -- SIL Open Font License 1.1, see src/fonts/OFL.txt.
+
+   This file must contain ONLY the @font-face rules, nothing else, and the
+   binary font files must NOT live in this directory. mdBook auto-detects
+   theme/fonts/fonts.css and uses it in place of its own bundled default
+   font stylesheet, but every OTHER file it also finds under theme/fonts/
+   gets fingerprinted with an independent content hash at build time, and
+   the rewrite that keeps mdBook's own default fonts.css in sync with its
+   own hashed files is hardcoded to that default manifest -- it does not
+   run on a custom fonts.css. A theme/fonts/fonts.css that also ships its
+   own woff2 siblings will reference their pre-hash names, which is exactly
+   the bug this file used to carry: it referenced
+   "CormorantGaramond-b20b7d96.ttf" while the shipped file on disk was named
+   "CormorantGaramond.ttf" -- neither name was ever going to match the hash
+   mdBook computed for whichever file actually sat next to it.
+
+   The font binaries live under src/fonts/ instead (see src/images/ for the
+   existing precedent): mdBook copies src/ assets verbatim, unhashed, and
+   they land in the same top-level build/fonts/ directory this file does,
+   so a bare filename below is enough to resolve at build time -- verified
+   by inspecting the built output, not assumed. */
 @font-face {
-  font-family: "Cormorant Garamond";
-  src: url("CormorantGaramond-b20b7d96.ttf") format("truetype");
+  font-family: "Geist";
+  src: url("Geist-Regular.woff2") format("woff2");
   font-display: swap;
   font-style: normal;
-  font-weight: 300 700;
+  font-weight: 400;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("Geist-Medium.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 500;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("Geist-SemiBold.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 600;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("GeistMono-Regular.woff2") format("woff2");
+  font-display: swap;
+  font-style: normal;
+  font-weight: 400;
 }

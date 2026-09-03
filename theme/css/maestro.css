@@ -1,59 +1,136 @@
-/* Obsidian Score: Maestro's restrained editorial mdBook theme. */
+/* Maestro's mdBook theme, built on the Vercel-inspired visual contract in
+   DESIGN.md. Every colour below is one of that document's own tokens -- see
+   docs/design-mapping.md for the element-by-element transposition. */
 :root {
-  --maestro-ink: #090b10;
-  --maestro-panel: #0d1017;
-  --maestro-paper: #f5f0e8;
-  --maestro-muted: #a7abb5;
-  --maestro-brass: #c8a75a;
-  --maestro-brass-bright: #e3c779;
-  --maestro-line: #292d35;
-  --maestro-success: #71c59b;
-  --maestro-designed: #a998df;
-  --maestro-exploring: #8ca9cc;
-  --maestro-radius: 0.75rem;
-  --maestro-shadow: 0 1.5rem 4rem rgb(0 0 0 / 32%);
+  /* DESIGN.md colour tokens, used verbatim. */
+  --design-ink: #171717;
+  --design-canvas: #ffffff;
+  --design-canvas-soft: #fafafa;
+  --design-canvas-soft-2: #f5f5f5;
+  --design-body: #4d4d4d;
+  --design-mute: #888888;
+  --design-hairline: #ebebeb;
+  --design-hairline-strong: #a1a1a1;
+  --design-on-primary: #ffffff;
+  --design-link: #0070f3;
+  --design-link-deep: #0761d1;
+  --design-link-bg-soft: #d3e5ff;
+  --design-success: #0070f3;
+  --design-warning-deep: #ab570a;
+  --design-violet: #7928ca;
+  --design-cyan-deep: #29bc9b;
+  --design-selection-bg: #171717;
+  --design-selection-fg: #f2f2f2;
+  --design-gradient-develop-start: #007cf0;
+  --design-gradient-develop-end: #00dfd8;
+  --design-gradient-preview-start: #7928ca;
+  --design-gradient-preview-end: #ff0080;
+  --design-gradient-ship-start: #ff4d4d;
+  --design-gradient-ship-end: #f9cb28;
+
+  /* DESIGN.md radius and spacing tokens actually used here. */
+  --design-radius-sm: 6px;
+  --design-radius-md: 8px;
+  --design-radius-lg: 12px;
+  --design-radius-pill: 100px;
+  --design-space-xs: 8px;
+  --design-space-sm: 12px;
+  --design-space-md: 16px;
+  --design-space-lg: 24px;
+  --design-space-xl: 32px;
+  --design-space-4xl: 64px;
+
+  /* Elevation levels 2-5 from DESIGN.md, stacked shadows at 4-12% black. */
+  --design-shadow-2: 0px 1px 1px rgb(0 0 0 / 5%), 0px 2px 2px rgb(0 0 0 / 10%);
+  --design-shadow-3: 0px 2px 2px rgb(0 0 0 / 10%), 0px 8px 8px -8px rgb(0 0 0 / 10%);
+  --design-shadow-4: 0px 2px 2px rgb(0 0 0 / 10%), 0px 8px 16px -4px rgb(0 0 0 / 10%);
+  --design-shadow-5: 0px 1px 1px rgb(0 0 0 / 5%), 0px 8px 16px -4px rgb(0 0 0 / 10%),
+    0px 24px 32px -8px rgb(0 0 0 / 15%);
+
+  /* Status colours (docs/design-mapping.md), rendered as filled chips rather
+     than currentColor-on-page-background text: the mapping's own contrast
+     check only covered {colors.canvas}, and built/in-progress/designed all
+     fail 4.5:1 as text against the dark variant's {colors.ink} page (see
+     PR report). A fixed-background chip keeps every status legible on both
+     surfaces without adding a colour outside DESIGN.md's token set. */
+  --design-status-built: var(--design-success);
+  --design-status-built-fg: var(--design-on-primary);
+  --design-status-in-progress: var(--design-warning-deep);
+  --design-status-in-progress-fg: var(--design-on-primary);
+  --design-status-designed: var(--design-violet);
+  --design-status-designed-fg: var(--design-on-primary);
+  --design-status-exploring: var(--design-cyan-deep);
+  --design-status-exploring-fg: var(--design-ink);
 }
 
-.navy {
-  --bg: var(--maestro-ink);
-  --fg: var(--maestro-paper);
-  --sidebar-bg: var(--maestro-panel);
-  --sidebar-fg: var(--maestro-muted);
-  --sidebar-non-existant: #6f7480;
-  --sidebar-active: var(--maestro-brass-bright);
-  --sidebar-spacer: var(--maestro-line);
-  --scrollbar: #555b68;
-  --icons: #b7bac2;
-  --icons-hover: var(--maestro-paper);
-  --links: var(--maestro-brass-bright);
-  --inline-code-color: var(--maestro-paper);
-  --theme-popup-bg: var(--maestro-panel);
-  --theme-popup-border: var(--maestro-line);
-  --theme-hover: #171b24;
-  --quote-bg: rgb(200 167 90 / 8%);
-  --quote-border: var(--maestro-brass);
-  --table-border-color: var(--maestro-line);
-  --table-header-bg: #121620;
-  --table-alternate-bg: rgb(255 255 255 / 2%);
-  --searchbar-border-color: var(--maestro-line);
-  --searchbar-bg: var(--maestro-panel);
-  --searchbar-fg: var(--maestro-paper);
-  --searchbar-shadow-color: rgb(0 0 0 / 45%);
-  --searchresults-header-fg: var(--maestro-paper);
-  --searchresults-border-color: var(--maestro-line);
-  --searchresults-li-bg: #121620;
-  --search-mark-bg: rgb(200 167 90 / 30%);
-}
-
+/* Light is the DESIGN.md default: near-white canvas, near-black ink. */
 .light,
 .rust,
 html:not(.js) {
-  --maestro-brass-bright: #705514;
-  --maestro-designed: #604c9e;
-  --maestro-exploring: #315f86;
-  --maestro-line: #aaa39a;
-  --maestro-muted: #555b66;
-  --maestro-success: #276749;
+  --bg: var(--design-canvas-soft);
+  --fg: var(--design-ink);
+  --sidebar-bg: var(--design-canvas);
+  --sidebar-fg: var(--design-body);
+  --sidebar-non-existant: var(--design-mute);
+  --sidebar-active: var(--design-link);
+  --sidebar-spacer: var(--design-hairline);
+  --scrollbar: var(--design-hairline-strong);
+  --icons: var(--design-body);
+  --icons-hover: var(--design-ink);
+  --links: var(--design-link);
+  --inline-code-color: var(--design-ink);
+  --theme-popup-bg: var(--design-canvas);
+  --theme-popup-border: var(--design-hairline);
+  --theme-hover: var(--design-canvas-soft-2);
+  --quote-bg: var(--design-canvas-soft);
+  --quote-border: var(--design-hairline-strong);
+  --table-border-color: var(--design-hairline);
+  --table-header-bg: var(--design-canvas-soft);
+  --table-alternate-bg: var(--design-canvas-soft);
+  --searchbar-border-color: var(--design-hairline);
+  --searchbar-bg: var(--design-canvas);
+  --searchbar-fg: var(--design-ink);
+  --searchbar-shadow-color: rgb(0 0 0 / 12%);
+  --searchresults-header-fg: var(--design-ink);
+  --searchresults-border-color: var(--design-hairline);
+  --searchresults-li-bg: var(--design-canvas-soft);
+  --search-mark-bg: var(--design-link-bg-soft);
+}
+
+/* The dark variant: DESIGN.md's own polarity-flip, {colors.primary} as the
+   page background and {colors.on-primary} as text -- the same substitution
+   the contract documents for showcase-band-dark and pricing-card-featured.
+   Divider and hover tones are alpha steps of on-primary/ink so no colour
+   outside the token set is introduced. */
+.navy {
+  --bg: var(--design-ink);
+  --fg: var(--design-on-primary);
+  --sidebar-bg: var(--design-ink);
+  --sidebar-fg: rgb(255 255 255 / 72%);
+  --sidebar-non-existant: rgb(255 255 255 / 40%);
+  --sidebar-active: var(--design-on-primary);
+  --sidebar-spacer: rgb(255 255 255 / 14%);
+  --scrollbar: rgb(255 255 255 / 30%);
+  --icons: rgb(255 255 255 / 72%);
+  --icons-hover: var(--design-on-primary);
+  --links: var(--design-link-bg-soft);
+  --inline-code-color: var(--design-on-primary);
+  --theme-popup-bg: #202020;
+  --theme-popup-border: rgb(255 255 255 / 14%);
+  --theme-hover: rgb(255 255 255 / 8%);
+  --quote-bg: rgb(255 255 255 / 6%);
+  --quote-border: rgb(255 255 255 / 24%);
+  --table-border-color: rgb(255 255 255 / 14%);
+  --table-header-bg: #202020;
+  --table-alternate-bg: rgb(255 255 255 / 3%);
+  --searchbar-border-color: rgb(255 255 255 / 14%);
+  --searchbar-bg: #202020;
+  --searchbar-fg: var(--design-on-primary);
+  --searchbar-shadow-color: rgb(0 0 0 / 45%);
+  --searchresults-header-fg: var(--design-on-primary);
+  --searchresults-border-color: rgb(255 255 255 / 14%);
+  --searchresults-li-bg: #202020;
+  --search-mark-bg: rgb(0 112 243 / 30%);
 }
 
 html {
@@ -62,25 +139,31 @@ html {
 
 body {
   background: var(--bg);
+  font-family: "Geist", "Inter", system-ui, -apple-system, sans-serif;
   font-feature-settings: "kern", "liga";
   text-rendering: optimizeLegibility;
 }
 
+/* Level 0 -- Flat, per DESIGN.md's elevation table: the polarity-flipped dark
+   variant carries no atmospheric decoration outside the hero. */
 .navy.js body {
-  background:
-    radial-gradient(circle at 72% -10%, rgb(200 167 90 / 10%), transparent 34rem),
-    var(--maestro-ink);
+  background: var(--bg);
+}
+
+::selection {
+  background: var(--design-selection-bg);
+  color: var(--design-selection-fg);
 }
 
 .navy ::selection {
-  background: rgb(200 167 90 / 32%);
-  color: var(--maestro-paper);
+  background: var(--design-canvas);
+  color: var(--design-ink);
 }
 
-.navy :focus-visible,
-.coal :focus-visible,
-.ayu :focus-visible {
-  outline: 2px solid var(--maestro-brass-bright);
+.light :focus-visible,
+.rust :focus-visible,
+.navy :focus-visible {
+  outline: 2px solid var(--links);
   outline-offset: 3px;
 }
 
@@ -96,7 +179,7 @@ body {
 
 .sidebar {
   border-right: 1px solid var(--sidebar-spacer);
-  box-shadow: 1rem 0 3rem rgb(0 0 0 / 12%);
+  box-shadow: var(--design-shadow-2);
 }
 
 .sidebar .sidebar-scrollbox {
@@ -105,7 +188,7 @@ body {
 
 .sidebar .menu-title {
   align-items: center;
-  border-bottom: 1px solid var(--maestro-line);
+  border-bottom: 1px solid var(--sidebar-spacer);
   display: flex;
   justify-content: center;
   margin: 0 0 1.35rem;
@@ -126,7 +209,7 @@ body {
 
 .chapter li.chapter-item a {
   border-left: 2px solid transparent;
-  border-radius: 0 0.35rem 0.35rem 0;
+  border-radius: 0 var(--design-radius-sm) var(--design-radius-sm) 0;
   color: var(--sidebar-fg);
   padding: 0.45rem 0.65rem;
   transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease;
@@ -155,24 +238,27 @@ body {
   margin-top: 0;
 }
 
+/* Display type: Geist at weight 600 (DESIGN.md's ceiling), sentence-case,
+   negative tracking. */
 .content main h1,
 .content main h2,
 .content main h3 {
   color: var(--fg);
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Geist", "Inter", system-ui, -apple-system, sans-serif;
   font-weight: 600;
-  letter-spacing: -0.02em;
   line-height: 1.05;
 }
 
 .content main h1 {
   font-size: clamp(2.8rem, 7vw, 5.4rem);
+  letter-spacing: -0.04em;
   margin-bottom: 2rem;
 }
 
 .content main h2 {
-  border-bottom: 1px solid var(--maestro-line);
+  border-bottom: 1px solid var(--sidebar-spacer);
   font-size: clamp(2rem, 4vw, 3.15rem);
+  letter-spacing: -0.04em;
   margin-top: 3.75rem;
   padding-bottom: 0.65rem;
 }
@@ -180,6 +266,7 @@ body {
 .content main h3 {
   color: var(--links);
   font-size: 1.75rem;
+  letter-spacing: -0.03em;
   margin-top: 2.5rem;
 }
 
@@ -200,22 +287,38 @@ body {
 }
 
 .maestro-hero {
-  border-bottom: 1px solid var(--maestro-line);
+  border-bottom: 1px solid var(--sidebar-spacer);
   margin: 1rem 0 3.5rem;
   overflow: hidden;
   padding: clamp(2.5rem, 7vw, 6rem) 0 clamp(2.75rem, 7vw, 5.5rem);
   position: relative;
 }
 
-.maestro-hero::after {
-  background: radial-gradient(circle, rgb(200 167 90 / 18%), transparent 65%);
+/* The brand's only decorative chrome, per DESIGN.md: a multi-stop mesh
+   gradient built from its three token pairs (develop/preview/ship), used at
+   hero scale only and never appearing on an ordinary page -- .maestro-hero
+   is not used outside src/index.md. Treated as one atmospheric backdrop:
+   the three pairs are not split, reordered, or reduced to a single colour. */
+.maestro-hero::before {
+  background:
+    radial-gradient(circle at 82% -12%, var(--design-gradient-preview-end), transparent 46%),
+    radial-gradient(circle at 96% 18%, var(--design-gradient-ship-end), transparent 42%),
+    radial-gradient(circle at 70% 6%, var(--design-gradient-preview-start), transparent 50%),
+    radial-gradient(circle at 100% 42%, var(--design-gradient-develop-end), transparent 44%),
+    radial-gradient(circle at 88% 55%, var(--design-gradient-develop-start), transparent 52%);
   content: "";
-  height: 24rem;
+  filter: blur(2.5rem);
+  height: 42rem;
+  opacity: 0.28;
   pointer-events: none;
   position: absolute;
-  right: -10rem;
-  top: -9rem;
-  width: 24rem;
+  right: -14rem;
+  top: -16rem;
+  width: 42rem;
+}
+
+.navy .maestro-hero::before {
+  opacity: 0.4;
 }
 
 .maestro-hero__wordmark {
@@ -223,6 +326,7 @@ body {
   height: auto;
   margin-bottom: 2.4rem;
   max-width: 36rem;
+  position: relative;
   width: min(100%, 36rem);
 }
 
@@ -237,19 +341,23 @@ html:not(.js) .maestro-sidebar-wordmark {
 
 .maestro-kicker {
   color: var(--links);
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   font-size: 0.72rem;
-  font-weight: 700;
+  font-weight: 400;
   letter-spacing: 0.19em;
   margin: 0 0 1rem;
+  position: relative;
   text-transform: uppercase;
 }
 
 .maestro-hero h2 {
   border: 0;
   font-size: clamp(2.5rem, 6vw, 4.8rem);
+  letter-spacing: -0.04em;
   margin: 0;
   max-width: 46rem;
   padding: 0;
+  position: relative;
 }
 
 .maestro-hero__lede {
@@ -257,6 +365,7 @@ html:not(.js) .maestro-sidebar-wordmark {
   font-size: 1.08rem;
   margin: 1.4rem 0 0;
   max-width: 42rem;
+  position: relative;
 }
 
 .maestro-hero__actions {
@@ -264,45 +373,62 @@ html:not(.js) .maestro-sidebar-wordmark {
   flex-wrap: wrap;
   gap: 0.75rem;
   margin-top: 2rem;
+  position: relative;
 }
 
+/* button-primary / button-secondary, DESIGN.md's 100px marketing pill. */
 .maestro-button {
   align-items: center;
-  border: 1px solid var(--maestro-line);
-  border-radius: 999px;
+  border: 1px solid var(--design-hairline);
+  border-radius: var(--design-radius-pill);
   display: inline-flex;
+  font-family: "Geist", "Inter", system-ui, -apple-system, sans-serif;
   font-size: 0.82rem;
-  font-weight: 700;
+  font-weight: 500;
   gap: 0.45rem;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   padding: 0.7rem 1rem;
   text-decoration: none !important;
 }
 
 .maestro-button--primary {
-  background: var(--maestro-brass);
-  border-color: var(--maestro-brass);
-  color: var(--maestro-ink) !important;
+  background: var(--design-ink);
+  border-color: var(--design-ink);
+  color: var(--design-on-primary) !important;
+}
+
+.navy .maestro-button--primary {
+  background: var(--design-canvas);
+  border-color: var(--design-canvas);
+  color: var(--design-ink) !important;
 }
 
 .maestro-button--secondary {
-  background: var(--quote-bg);
-  color: var(--fg) !important;
+  background: var(--design-canvas);
+  border-color: var(--design-hairline);
+  color: var(--design-ink) !important;
+}
+
+.navy .maestro-button--secondary {
+  background: transparent;
+  border-color: rgb(255 255 255 / 24%);
+  color: var(--design-on-primary) !important;
 }
 
 .maestro-button:hover {
-  box-shadow: 0 0.65rem 1.7rem rgb(0 0 0 / 24%);
+  box-shadow: var(--design-shadow-3);
   transform: translateY(-1px);
 }
 
+/* card-marketing chrome (DESIGN.md), Level 3 soft-stack shadow. */
 .maestro-claim {
-  background: linear-gradient(135deg, rgb(200 167 90 / 10%), rgb(255 255 255 / 2%));
-  border: 1px solid rgb(200 167 90 / 30%);
-  border-left: 3px solid var(--maestro-brass);
-  border-radius: var(--maestro-radius);
-  box-shadow: 0 1rem 3rem rgb(0 0 0 / 14%);
+  background: var(--theme-popup-bg);
+  border: 1px solid var(--theme-popup-border);
+  border-left: 3px solid var(--links);
+  border-radius: var(--design-radius-md);
+  box-shadow: var(--design-shadow-3);
   margin: 2rem 0;
-  padding: 1.2rem 1.35rem;
+  padding: var(--design-space-lg) 1.35rem;
 }
 
 .maestro-claim > :first-child {
@@ -315,7 +441,7 @@ html:not(.js) .maestro-sidebar-wordmark {
 
 .maestro-claim__evidence {
   align-items: center;
-  border-top: 1px solid rgb(200 167 90 / 22%);
+  border-top: 1px solid var(--sidebar-spacer);
   color: var(--fg);
   display: flex;
   flex-wrap: wrap;
@@ -326,13 +452,17 @@ html:not(.js) .maestro-sidebar-wordmark {
   padding-top: 0.85rem;
 }
 
+/* Status pills as filled chips (see :root comment): a fixed token background
+   with a text colour chosen for contrast, so legibility does not depend on
+   which page surface -- light or dark -- the chip sits on. */
 .maestro-status,
 .maestro-claim__status {
-  border: 1px solid currentColor;
-  border-radius: 999px;
+  border: 0;
+  border-radius: var(--design-radius-pill);
   display: inline-flex;
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   font-size: 0.68rem;
-  font-weight: 800;
+  font-weight: 400;
   letter-spacing: 0.1em;
   line-height: 1;
   padding: 0.4rem 0.55rem;
@@ -342,22 +472,26 @@ html:not(.js) .maestro-sidebar-wordmark {
 
 .maestro-status[data-status="built"],
 .maestro-claim__status[data-status="built"] {
-  color: var(--maestro-success);
+  background: var(--design-status-built);
+  color: var(--design-status-built-fg);
 }
 
 .maestro-status[data-status="in-progress"],
 .maestro-claim__status[data-status="in-progress"] {
-  color: var(--maestro-brass-bright);
+  background: var(--design-status-in-progress);
+  color: var(--design-status-in-progress-fg);
 }
 
 .maestro-status[data-status="designed"],
 .maestro-claim__status[data-status="designed"] {
-  color: var(--maestro-designed);
+  background: var(--design-status-designed);
+  color: var(--design-status-designed-fg);
 }
 
 .maestro-status[data-status="exploring"],
 .maestro-claim__status[data-status="exploring"] {
-  color: var(--maestro-exploring);
+  background: var(--design-status-exploring);
+  color: var(--design-status-exploring-fg);
 }
 
 .maestro-flow {
@@ -372,8 +506,8 @@ html:not(.js) .maestro-sidebar-wordmark {
 
 .maestro-flow li {
   background: var(--table-alternate-bg);
-  border: 1px solid var(--maestro-line);
-  border-radius: var(--maestro-radius);
+  border: 1px solid var(--sidebar-spacer);
+  border-radius: var(--design-radius-md);
   counter-increment: maestro-stage;
   display: grid;
   gap: 0.3rem;
@@ -389,6 +523,7 @@ html:not(.js) .maestro-sidebar-wordmark {
   color: var(--links);
   content: counter(maestro-stage, decimal-leading-zero);
   display: flex;
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   font-size: 0.62rem;
   height: 1.65rem;
   justify-content: center;
@@ -401,8 +536,9 @@ html:not(.js) .maestro-sidebar-wordmark {
 
 .maestro-flow strong {
   color: var(--fg);
-  font-family: "Cormorant Garamond", Georgia, serif;
+  font-family: "Geist", "Inter", system-ui, -apple-system, sans-serif;
   font-size: 1.2rem;
+  font-weight: 600;
 }
 
 .maestro-flow span {
@@ -412,9 +548,9 @@ html:not(.js) .maestro-sidebar-wordmark {
 }
 
 .content main table {
-  border: 1px solid var(--maestro-line);
+  border: 1px solid var(--sidebar-spacer);
   border-collapse: separate;
-  border-radius: var(--maestro-radius);
+  border-radius: var(--design-radius-md);
   border-spacing: 0;
   display: table;
   overflow: hidden;
@@ -423,18 +559,26 @@ html:not(.js) .maestro-sidebar-wordmark {
 
 .content main th {
   color: var(--links);
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   font-size: 0.72rem;
+  font-weight: 400;
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
 
 .content main pre {
   background: var(--theme-popup-bg);
-  border: 1px solid var(--maestro-line);
-  border-radius: var(--maestro-radius);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 3%);
+  border: 1px solid var(--sidebar-spacer);
+  border-radius: var(--design-radius-md);
+  box-shadow: var(--design-shadow-2);
   color: var(--fg);
   padding: 1.1rem 1.2rem;
+}
+
+.content main pre,
+.content main pre > code,
+.content main :not(pre) > code {
+  font-family: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
 }
 
 .content main pre > code {
@@ -442,14 +586,14 @@ html:not(.js) .maestro-sidebar-wordmark {
 }
 
 .content main :not(pre) > code {
-  background: rgb(200 167 90 / 10%);
-  border: 1px solid rgb(200 167 90 / 16%);
+  background: var(--quote-bg);
+  border: 1px solid var(--quote-border);
   border-radius: 0.3rem;
   padding: 0.1em 0.3em;
 }
 
 .maestro-reading-progress {
-  background: var(--maestro-brass);
+  background: var(--links);
   height: 2px;
   inset: 0 auto auto 0;
   position: fixed;
@@ -462,13 +606,13 @@ html:not(.js) .maestro-sidebar-wordmark {
 
 .maestro-command-trigger {
   align-items: center;
-  background: rgb(255 255 255 / 3%);
-  border: 1px solid var(--maestro-line);
-  border-radius: 0.4rem;
-  color: var(--maestro-muted);
+  background: transparent;
+  border: 1px solid var(--sidebar-spacer);
+  border-radius: var(--design-radius-sm);
+  color: var(--sidebar-fg);
   cursor: pointer;
   display: inline-flex;
-  font: 700 0.64rem/1 system-ui, sans-serif;
+  font: 500 0.64rem/1 "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;
   height: 1.9rem;
   justify-content: center;
   letter-spacing: 0.04em;
@@ -483,11 +627,11 @@ html:not(.js) .maestro-sidebar-wordmark {
 }
 
 .maestro-command {
-  background: var(--maestro-panel);
-  border: 1px solid var(--maestro-line);
-  border-radius: 1rem;
-  box-shadow: var(--maestro-shadow);
-  color: var(--maestro-paper);
+  background: var(--theme-popup-bg);
+  border: 1px solid var(--theme-popup-border);
+  border-radius: var(--design-radius-lg);
+  box-shadow: var(--design-shadow-5);
+  color: var(--fg);
   margin-top: 12vh;
   max-height: min(70vh, 40rem);
   max-width: 40rem;
@@ -497,12 +641,12 @@ html:not(.js) .maestro-sidebar-wordmark {
 
 .maestro-command::backdrop {
   backdrop-filter: blur(8px);
-  background: rgb(4 5 8 / 72%);
+  background: rgb(23 23 23 / 45%);
 }
 
 .maestro-command__header {
   align-items: center;
-  border-bottom: 1px solid var(--maestro-line);
+  border-bottom: 1px solid var(--theme-popup-border);
   display: flex;
   gap: 0.75rem;
   padding: 1rem;
@@ -511,7 +655,7 @@ html:not(.js) .maestro-sidebar-wordmark {
 .maestro-command__input {
   background: transparent;
   border: 0;
-  color: var(--maestro-paper);
+  color: var(--fg);
   flex: 1;
   font: inherit;
   font-size: 1rem;
@@ -520,15 +664,15 @@ html:not(.js) .maestro-sidebar-wordmark {
 }
 
 .maestro-command__input:focus-visible {
-  outline: 2px solid var(--maestro-paper);
+  outline: 2px solid var(--links);
   outline-offset: -2px;
 }
 
 .maestro-command__close {
   background: transparent;
-  border: 1px solid var(--maestro-line);
-  border-radius: 999px;
-  color: var(--maestro-muted);
+  border: 1px solid var(--theme-popup-border);
+  border-radius: var(--design-radius-pill);
+  color: var(--sidebar-fg);
   cursor: pointer;
   height: 2rem;
   width: 2rem;
@@ -543,8 +687,8 @@ html:not(.js) .maestro-sidebar-wordmark {
 }
 
 .maestro-command__results a {
-  border-radius: 0.5rem;
-  color: var(--maestro-paper);
+  border-radius: var(--design-radius-sm);
+  color: var(--fg);
   display: flex;
   justify-content: space-between;
   padding: 0.75rem;
@@ -553,7 +697,7 @@ html:not(.js) .maestro-sidebar-wordmark {
 
 .maestro-command__results a:hover,
 .maestro-command__results a:focus-visible {
-  background: rgb(200 167 90 / 10%);
+  background: var(--theme-hover);
 }
 
 .maestro-copy-status {
@@ -636,7 +780,8 @@ html:not(.js) .maestro-sidebar-wordmark {
   .nav-chapters,
   .maestro-reading-progress,
   .maestro-command,
-  .maestro-hero__actions {
+  .maestro-hero__actions,
+  .maestro-hero::before {
     display: none !important;
   }
 
@@ -676,5 +821,11 @@ html:not(.js) .maestro-sidebar-wordmark {
     background: transparent;
     border-color: #777;
     box-shadow: none;
+  }
+
+  .maestro-status,
+  .maestro-claim__status {
+    background: transparent !important;
+    border: 1px solid #777 !important;
   }
 }
