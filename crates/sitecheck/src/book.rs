@@ -185,17 +185,50 @@ mod tests {
     };
 
     fn fixture(summary: &str, index: &str) -> PathBuf {
-        let root = std::env::temp_dir().join(format!(
-            "maestro-sitecheck-book-{}",
-            SystemTime::now()
-                .duration_since(UNIX_EPOCH)
-                .expect("clock")
-                .as_nanos()
-        ));
+        let root = std::env::temp_dir().join(unique_fixture_name());
         fs::create_dir_all(root.join("src")).expect("fixture source directory");
         fs::write(root.join("src/SUMMARY.md"), summary).expect("fixture summary");
         fs::write(root.join("src/index.md"), index).expect("fixture index");
         root
+    }
+
+    /// A nanosecond timestamp alone collided between tests on macOS CI, where
+    /// clock resolution can be coarser than on Linux: two of this module's
+    /// tests, run concurrently by the default test harness, computed the same
+    /// directory name and then raced on each other's fixture files. The
+    /// counter guarantees uniqueness by construction, independent of clock
+    /// resolution or scheduling.
+    fn unique_fixture_name() -> String {
+        static SEQUENCE: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+        let sequence = SEQUENCE.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        format!(
+            "maestro-sitecheck-book-{}-{sequence}",
+            SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .expect("clock")
+                .as_nanos()
+        )
+    }
+
+    #[test]
+    fn generates_unique_fixture_names_under_concurrent_calls() {
+        use std::{collections::HashSet, thread};
+
+        let names: Vec<String> = thread::scope(|scope| {
+            (0..64)
+                .map(|_| scope.spawn(unique_fixture_name))
+                .collect::<Vec<_>>()
+                .into_iter()
+                .map(|handle| handle.join().expect("thread"))
+                .collect()
+        });
+
+        let unique: HashSet<&str> = names.iter().map(String::as_str).collect();
+        assert_eq!(
+            unique.len(),
+            names.len(),
+            "fixture names collided: {names:?}"
+        );
     }
 
     #[test]
