@@ -15,6 +15,10 @@ fn theme_css() -> String {
     fs::read_to_string(repo_root().join("theme/css/maestro.css")).expect("theme CSS is readable")
 }
 
+fn book_toml() -> String {
+    fs::read_to_string(repo_root().join("book.toml")).expect("book.toml is readable")
+}
+
 #[test]
 fn content_colors_follow_the_selected_mdbook_theme() {
     let css = theme_css();
@@ -50,4 +54,44 @@ fn code_blocks_follow_the_theme_without_javascript_and_in_print() {
     assert!(print.contains(".content main pre code {"));
     assert!(print.contains("background: #fff !important;"));
     assert!(print.contains("color: #111 !important;"));
+}
+
+/// DESIGN.md is a light-canvas system by default; the book's default theme
+/// must not silently revert to the old dark-first `navy` default.
+#[test]
+fn default_theme_follows_design_md_light_canvas() {
+    let toml = book_toml();
+
+    assert!(toml.contains("default-theme = \"light\""));
+    assert!(toml.contains("preferred-dark-theme = \"navy\""));
+}
+
+/// DESIGN.md names Geist and Geist Mono as "the two custom faces [that] carry
+/// the entire system"; the retired Cormorant Garamond face must not return.
+#[test]
+fn headings_and_body_use_geist_not_cormorant() {
+    let css = theme_css();
+
+    assert!(
+        css.contains("font-family: \"Geist\", \"Inter\", system-ui, -apple-system, sans-serif;")
+    );
+    assert!(css.contains(
+        "font-family: \"Geist Mono\", ui-monospace, SFMono-Regular, Menlo, Monaco, monospace;"
+    ));
+    assert!(!css.contains("Cormorant Garamond"));
+}
+
+/// The four status colours (docs/design-mapping.md) are filled chips, not
+/// currentColor-on-page-background text, so a coloured background must not
+/// survive into print -- otherwise print wastes ink on decoration a
+/// currentColor pill never needed resetting for.
+#[test]
+fn status_chip_fills_reset_to_transparent_in_print() {
+    let css = theme_css();
+    let print = css.split_once("@media print").expect("print rules").1;
+
+    assert!(print.contains(
+        ".maestro-status,\n  .maestro-claim__status {\n    background: transparent !important;"
+    ));
+    assert!(print.contains("border: 1px solid #777 !important;"));
 }

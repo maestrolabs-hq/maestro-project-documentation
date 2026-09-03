@@ -1,24 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 120" role="img" aria-labelledby="title description">
   <title id="title">Maestro</title>
-  <desc id="description">The Maestro wordmark, with its final letter in brass.</desc>
+  <desc id="description">The Maestro wordmark, with its final letter in the link accent colour.</desc>
   <style>
     @font-face {
-      font-family: "Cormorant Garamond";
-      src: url("../fonts/CormorantGaramond-b20b7d96.ttf") format("truetype");
+      font-family: "Geist";
+      src: url("../fonts/Geist-SemiBold.woff2") format("woff2");
       font-weight: 600;
     }
 
     svg {
-      color: #f5f0e8;
-      --maestro-wordmark-accent: #c8a75a;
+      color: #ffffff;
+      --maestro-wordmark-accent: #0070f3;
     }
 
     .wordmark {
       fill: currentColor;
-      font-family: "Cormorant Garamond", Georgia, serif;
+      font-family: "Geist", "Inter", system-ui, -apple-system, sans-serif;
       font-size: 82px;
       font-weight: 600;
-      letter-spacing: 15px;
+      letter-spacing: -3px;
     }
 
     .accent {
