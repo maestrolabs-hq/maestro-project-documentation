@@ -148,12 +148,6 @@ The GitHub repository is:
 - Decisions beside code
 - Rebuilding from source
 
-### Capabilities
-
-- Workspace intelligence
-
-The workspace-intelligence page explains trusted workspace discovery, separate repository-graph and workspace-context results, architecture validation/render/delivery, and durable lifecycle refresh through stable Maestro commands and artifact references. It links to core and Pi-config primary documents without copying provider names, versions, pins, native schemas, retry internals, or executable policy.
-
 ### Estate
 
 - Ecosystem map
